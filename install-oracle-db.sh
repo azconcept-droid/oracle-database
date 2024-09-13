@@ -4,70 +4,54 @@
 # Date: 28/08/2024
 # Usage: sudo bash install-oracle-db.sh
 
+# Update your oracle linux
+sudo dnf update
 
-
-dnf install -y bc
-dnf install -y binutils
-dnf install -y compat-openssl11
-dnf install -y elfutils-libelf
-dnf install -y fontconfig
-dnf install -y glibc
-dnf install -y glibc-devel
-dnf install -y ksh
-dnf install -y libaio
-dnf install -y libasan
-dnf install -y liblsan
-dnf install -y libX11
-dnf install -y libXau
-dnf install -y libXi
-dnf install -y libXrender
-dnf install -y libXtst
-dnf install -y libxcrypt-compat
-dnf install -y libgcc
-dnf install -y libibverbs
-dnf install -y libnsl
-dnf install -y librdmacm
-dnf install -y libstdc++
-dnf install -y libxcb
-dnf install -y libvirt-libs
-dnf install -y make
-dnf install -y policycoreutils
-dnf install -y policycoreutils-python-utils
-dnf install -y smartmontools
-dnf install -y sysstat
-
-dnf install -y glibc-headers
-dnf install -y ipmiutil
-dnf install -y libnsl2
-dnf install -y libnsl2-devel
-dnf install -y net-tools
-dnf install -y nfs-utils 
-
-# Added by me.
-dnf install -y gcc
-dnf install -y unixODBC
-
-# Create new groups and users
-groupadd -g 54321 oinstall
-groupadd -g 54322 dba
-groupadd -g 54323 oper 
-#groupadd -g 54324 backupdba
-#groupadd -g 54325 dgdba
-#groupadd -g 54326 kmdba
-#groupadd -g 54327 asmdba
-#groupadd -g 54328 asmoper
-#groupadd -g 54329 asmadmin
-#groupadd -g 54330 racdba
-
-useradd -u 54321 -g oinstall -G dba,oper oracle
-
-# Create directory
-mkdir -p /u01/app/oracle/product/19.0.0/dbhome_1
-mkdir -p /u02/oradata
-chown -R oracle:oinstall /u01 /u02
-chmod -R 775 /u01 /u02
+# Prequisites
+echo "=========Install Prequisites========="
+echo "yum install -y oracle-database-preinstall-19c"
+yum install -y oracle-database-preinstall-19c
 
 #Set the password for the "oracle" user.
-echo "Set password for oracle user: "
+echo "=======Set password for oracle user:==========="
+echo "passwd oracle"
 passwd oracle
 
+# Create required directories
+
+echo "========Create required directories==========="
+mkdir -p /u01/app/oracle/product/19c/db_1/
+mkdir -p /u01/app/oraInventory
+mkdir -p /u01/app/oracle/oradata/
+mkdir -p /u01/app/oracle/FRA/
+
+# Set owner
+echo "==========Set owner for directories============"
+chown -R oracle:oinstall /u01/
+
+# set permissions
+chmod -R 775 /u01/
+
+# switch to - oracle that has been installed by first command
+su - oracle
+
+# Edit a file here
+
+#Add this to /home/oracle/db_install.rsp to silent install
+oracle.install.responseFileVersion=/oracle/install/rspfmt_dbinstall_response_schema_v19.0.0
+oracle.install.option=INSTALL_DB_SWONLY
+UNIX_GROUP_NAME=oinstall
+INVENTORY_LOCATION=/u01/app/oraInventory
+ORACLE_HOME=/u01/app/oracle/product/19c/db_1/
+ORACLE_BASE=/u01/app/oracle
+oracle.install.db.InstallEdition=EE
+oracle.install.db.OSDBA_GROUP=oinstall
+oracle.install.db.OSOPER_GROUP=oinstall
+oracle.install.db.OSBACKUPDBA_GROUP=oinstall
+oracle.install.db.OSDGDBA_GROUP=oinstall
+oracle.install.db.OSKMDBA_GROUP=oinstall
+oracle.install.db.OSRACDBA_GROUP=oinstall
+oracle.install.db.rootconfig.executeRootScript=false
+
+# run the installer in silent mode
+./runInstaller -silent -ignorePrereqFailure -responsefile /home/oracle/db_install.rsp
