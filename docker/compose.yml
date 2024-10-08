@@ -1,0 +1,24 @@
+services:
+  oracledb:
+    image: oracle/database:19.3.0-ee
+    container_name: oracledb
+    restart: always
+    environment:
+      - ORACLE_PDB=orcl
+      - ORACLE_SID=nogicjqs
+      - ORACLE_PWD=Str0ngP4ssw0rd
+      - INIT_SGA_SIZE=3000
+      - INIT_PGA_SIZE=1000
+    ports:
+      - 1521:1521
+      - 5500:5500
+    volumes:
+      - oracledb_data:/opt/oracle/oradata:rw
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+volumes:
+  oracledb_data:
+    name: oracledb_data
